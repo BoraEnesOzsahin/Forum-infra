@@ -6,9 +6,10 @@ spring:
     name: forum-service
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/forumdb}
-    username: ${SPRING_DATASOURCE_USERNAME:forum}
-    password: ${SPRING_DATASOURCE_PASSWORD:forum}
+    url: jdbc:postgresql://localhost:5432/forumdb
+    username: myuser
+    password: ""
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update

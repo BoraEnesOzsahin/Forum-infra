@@ -9,6 +9,17 @@ on:
 jobs:
   build-test-docker:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: forumuser
+          POSTGRES_PASSWORD: forumpassword
+          POSTGRES_DB: forumdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U forumuser" --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,11 +30,20 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+
       - name: Build with Maven
         run: ./mvnw clean package --no-transfer-progress
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/forumdb
+          SPRING_DATASOURCE_USERNAME: forumuser
+          SPRING_DATASOURCE_PASSWORD: forumpassword
 
       - name: Run tests
         run: ./mvnw test --no-transfer-progress
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/forumdb
+          SPRING_DATASOURCE_USERNAME: forumuser
+          SPRING_DATASOURCE_PASSWORD: forumpassword
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
