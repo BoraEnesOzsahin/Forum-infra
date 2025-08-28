@@ -1,41 +1,39 @@
 package com.ayrotek.forum.entity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-/*import lombok.Getter;
-import lombok.Setter;*/
+
+import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.Instant;
 import java.util.List;
-import com.ayrotek.forum.entity.Post;
-
-
 
 @Entity
 @Data
 @Table(name = "threads")
+@Getter @Setter @NoArgsConstructor
 
 public class Thread {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String modelSlug;
+    @Column(nullable=false) private Long userId;
 
-    private String created_at;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable=false) private VehicleType role; // Commercial or Personal
+    @Column(nullable=false) private String modelId;
+    @Column(nullable=false) private String title;
+    /*@Column(nullable=false) private boolean locked = false;*/
 
-    @PrePersist
-    protected void onCreate() {
-        this.created_at = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
+    @Column(nullable=false) private Instant createdAt = Instant.now();
+    /*private Instant updatedAt;*/
+
+    @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SubThread> subThreads;
+
+    public enum VehicleType {
+        COMMERCIAL, PERSONAL
     }
-
-
-    @OneToMany(mappedBy = "thread", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
-    private List<Post> posts;
 }

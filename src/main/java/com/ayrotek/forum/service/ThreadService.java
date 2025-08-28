@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
+import java.time.Instant;
 
 
 
@@ -27,12 +28,25 @@ public class ThreadService {
         return threadRepo.findById(id).orElse(null);
     }
 
-    public Thread createThread(Thread thread) {
-        return threadRepo.save(thread);
-    }
 
     public void deleteThread(Long id) {
         threadRepo.deleteById(id);
     }
 
+
+
+     public Thread createThread(Thread thread) {
+
+        thread.setUserId(thread.getUserId());
+        thread.setTitle(thread.getTitle());
+        thread.setModelId(thread.getModelId());
+        thread.setRole(thread.getRole());
+        thread.setCreatedAt(Instant.now());
+
+        return threadRepo.save(thread);
+
+    }
+
+    
 }
+ 
