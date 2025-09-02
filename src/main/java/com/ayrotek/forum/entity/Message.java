@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Data @Getter @Setter @NoArgsConstructor
@@ -20,7 +21,13 @@ public class Message {
 
     @Column(nullable=false) private String userId;
     @Column(nullable=false) private String body;
-    @Column(nullable=false) private Instant createdAt = Instant.now();
+    @Column(nullable=false, updatable=false)
+    private Instant createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = java.time.Instant.now();
+    }
     @Column(nullable=false) private int upvoteCount = 0; // cached
     @Column(nullable=false) private boolean deleted = false;
 
@@ -29,4 +36,8 @@ public class Message {
     @ManyToOne
     @JoinColumn(name = "subthread_id", nullable = false)
     private SubThread subThread;
+
+    /*@OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MessageVote> message_votes;*/
+
 }

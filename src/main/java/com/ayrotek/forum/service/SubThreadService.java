@@ -2,9 +2,13 @@ package com.ayrotek.forum.service;
 import com.ayrotek.forum.entity.SubThread;
 import com.ayrotek.forum.repo.SubThreadRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.time.Instant;
 
+
+@Service
 public class SubThreadService {
 
     private final SubThreadRepo subThreadRepo;
@@ -14,8 +18,8 @@ public class SubThreadService {
         this.subThreadRepo = subThreadRepo;
     }
 
-    public List<SubThread> getAllSubThreads() {
-        return subThreadRepo.findAll();
+    public List<SubThread> getAllSubThreadsByThreadId(Long threadId) {
+        return subThreadRepo.findByThreadId(threadId);
     }
 
     public SubThread getSubThreadById(Long id) {

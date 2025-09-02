@@ -3,7 +3,7 @@ services:
     image: 'postgres:latest'
     environment:
       - 'POSTGRES_DB=forumdb'
-      - 'POSTGRES_PASSWORD='
+      - 'POSTGRES_PASSWORD=admin123'
       - 'POSTGRES_USER=myuser'
     ports:
       - '5432'

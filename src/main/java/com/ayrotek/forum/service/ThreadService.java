@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
-import java.time.Instant;
+
 
 
 
@@ -41,7 +41,7 @@ public class ThreadService {
         thread.setTitle(thread.getTitle());
         thread.setModelId(thread.getModelId());
         thread.setRole(thread.getRole());
-        thread.setCreatedAt(Instant.now());
+    // createdAt is set by @PrePersist
 
         return threadRepo.save(thread);
 

@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignore Docker files locally
+Dockerfile
+compose.yaml

@@ -27,7 +27,13 @@ public class Thread {
     @Column(nullable=false) private String title;
     /*@Column(nullable=false) private boolean locked = false;*/
 
-    @Column(nullable=false) private Instant createdAt = Instant.now();
+    @Column(nullable=false, updatable=false)
+    private Instant createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = Instant.now();
+    }
     /*private Instant updatedAt;*/
 
     @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, orphanRemoval = true)

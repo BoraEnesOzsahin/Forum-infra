@@ -22,11 +22,22 @@ public class MessageVote {
     @Column(nullable=false)
     private boolean upvoted; // true for upvote, false for downvote
 
-    @Column(nullable=false)
-    private Instant createdAt = Instant.now();
+    @Column(nullable=false, updatable=false)
+    private Instant createdAt;
 
     @Column
     private Instant updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = java.time.Instant.now();
+    }
+
+
+
+    /*@ManyToOne
+    @JoinColumn(name = "message_id", nullable = false)
+    private Message message;*/
 
     // Composite primary key class
     public static class PK implements Serializable {
@@ -52,5 +63,7 @@ public class MessageVote {
         public int hashCode() {
             return 31 * messageId.hashCode() + userId.hashCode();
         }
+
+
     }
 }

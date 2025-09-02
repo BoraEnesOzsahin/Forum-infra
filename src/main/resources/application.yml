@@ -6,10 +6,16 @@ spring:
     name: forum-service
 
   datasource:
+    #url: jdbc:postgresql://95.6.82.50:5432/forumdb
+    #username: sosyal-plaka-db-mngr
+    #password: Ayro1234+
+    #driver-class-name: org.postgresql.Driver
+
     url: jdbc:postgresql://localhost:5432/forumdb
-    username: myuser
-    password: ""
+    username: postgres
+    password: admin123
     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -20,16 +26,18 @@ spring:
     init:
       mode: never
 
-  data:
-    redis:
-      host: ${SPRING_REDIS_HOST:localhost}
-      port: ${SPRING_REDIS_PORT:6379}
 
+  # Redis disabled for local development
   cache:
-    type: redis
+    type: none
 
+  spring:
+  session:
+    store-type: none
+    
 management:
   endpoints:
     web:
       exposure:
         include: health,info
+
