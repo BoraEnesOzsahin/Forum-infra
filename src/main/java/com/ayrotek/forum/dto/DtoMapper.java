@@ -48,7 +48,7 @@ public class DtoMapper {
             } catch (NumberFormatException e) {}
         }
         dto.setTitle(subThread.getTitle());
-        dto.setContent(subThread.getContent());
+        //dto.setContent(subThread.getContent());
         dto.setCreatedAt(subThread.getCreatedAt());
         return dto;
     }
@@ -62,7 +62,7 @@ public class DtoMapper {
             subThread.setUserId(String.valueOf(dto.getUserId()));
         }
         subThread.setTitle(dto.getTitle());
-        subThread.setContent(dto.getContent());
+        //subThread.setContent(dto.getContent());
         return subThread;
     }
     // Message

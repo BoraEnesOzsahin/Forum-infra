@@ -21,7 +21,10 @@ import jakarta.persistence.PrePersist;
 public class User {
     @Id @GeneratedValue private Long id;
     @Column(nullable=false, unique=true) private String username;
-    @Column(nullable=false) private String message;
+    @Column private String message;
+    @Column private String model_id;
+    @Column(nullable=false) @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.ORDINAL)
+    private Role role;
     @Column(nullable=false, updatable=false)
     private java.time.Instant createdAt;
 
@@ -29,13 +32,11 @@ public class User {
     protected void onCreate() {
         this.createdAt = java.time.Instant.now();
     }
-    @Column(nullable=false) private String model_id;
-    @Column(nullable=false) private Role role; // user, mod, admin
 
-    
     public enum Role {
         ADMIN,
         REGULAR
     }
 
+    // Lombok will generate getters and setters
 }

@@ -7,16 +7,18 @@ import org.springframework.stereotype.Service;
 import com.ayrotek.forum.repo.MessageRepo;
 import com.ayrotek.forum.entity.Message;
 import com.ayrotek.forum.entity.SubThread;
+import com.ayrotek.forum.service.UserService;
 
 @Service
 
 public class MessageService {
 
     private final MessageRepo messageRepo;
+    private final UserService userService;
 
-    @Autowired
-    public MessageService(MessageRepo messageRepo) {
+    public MessageService(MessageRepo messageRepo, UserService userService) {
         this.messageRepo = messageRepo;
+        this.userService = userService;
     }
 
 
@@ -29,24 +31,27 @@ public class MessageService {
     }
 
     public Message createMessage(Message message) {
-        message.setBody(message.getBody());
-        message.setCreatedAt(message.getCreatedAt());
-        message.setUserId(message.getUserId());
-        message.setSubThread(message.getSubThread());
+        // Ensure user exists before creating message
+        // Fetch model_id from the grandparent thread to enforce the NOT NULL constraint
+        String modelId = message.getSubThread().getThread().getModelId();
+        userService.ensureUserExists(message.getUserId(), modelId);
+        
+        Message savedMessage = messageRepo.save(message);
+        userService.addMessageToUser(savedMessage.getUserId(), savedMessage.getBody());
 
-        return messageRepo.save(message);
+        return savedMessage;
     }
 
     public void deleteMessage(Long id) {
         messageRepo.deleteById(id);
     }
 
-    public Message updateMessage(Long id, Message updatedMessage) {
+    /*public Message updateMessage(Long id, Message updatedMessage) {
         return messageRepo.findById(id).map(message -> {
             message.setBody(updatedMessage.getBody());
             message.setUpdatedAt(java.time.Instant.now());
             return messageRepo.save(message);
         }).orElse(null);
-    }
+    }*/
 
 }

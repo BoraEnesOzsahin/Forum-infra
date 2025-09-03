@@ -20,7 +20,7 @@ public class SubThread {
 
     @Column(nullable=false) private String userId;
     @Column(nullable=false) private String title;
-    @Column(columnDefinition="text") private String content;
+    //@Column(columnDefinition="text") private String content;
     /*@Column(nullable=false) private boolean locked = false;*/
     @Column(nullable=false, updatable=false)
     private Instant createdAt;
