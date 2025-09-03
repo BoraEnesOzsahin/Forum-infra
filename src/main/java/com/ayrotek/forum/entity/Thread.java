@@ -2,9 +2,7 @@ package com.ayrotek.forum.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.Instant;
 import java.util.List;
@@ -12,8 +10,7 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "threads")
-@Getter @Setter @NoArgsConstructor
-
+@NoArgsConstructor
 public class Thread {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

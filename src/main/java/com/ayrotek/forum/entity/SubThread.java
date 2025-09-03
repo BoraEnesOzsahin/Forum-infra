@@ -2,16 +2,14 @@ package com.ayrotek.forum.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.Instant;
 import java.util.List;
 
 @Entity
-@Data @Getter @Setter @NoArgsConstructor
-
+@Data
+@NoArgsConstructor
 @Table(name = "subthreads")
 public class SubThread {
     @Id

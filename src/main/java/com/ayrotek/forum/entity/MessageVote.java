@@ -1,14 +1,17 @@
 package com.ayrotek.forum.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.io.Serializable;
 import java.time.Instant;
 
-@Entity @Table(name="message_vote")
-@Getter @Setter @NoArgsConstructor
+@Entity
+@Table(name="message_vote")
+@Data
+@NoArgsConstructor
 @IdClass(MessageVote.PK.class)
-
 public class MessageVote {
     
     @Id

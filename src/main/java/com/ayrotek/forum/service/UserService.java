@@ -1,50 +1,45 @@
 package com.ayrotek.forum.service;
 
-import com.ayrotek.forum.entity.Message;
 import com.ayrotek.forum.entity.User;
 import com.ayrotek.forum.entity.User.Role;
 import com.ayrotek.forum.repo.UserRepo;
-import com.ayrotek.forum.repo.MessageRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.foreign.Linker.Option;
 import java.util.Optional;
 
 @Service
 public class UserService {
     private final UserRepo userRepo;
-    private final MessageRepo messageRepo;
 
     @Autowired
-    public UserService(UserRepo userRepo, MessageRepo messageRepo) {
+    public UserService(UserRepo userRepo) {
         this.userRepo = userRepo;
-        this.messageRepo = messageRepo;
     }
 
-    public User ensureUserExists(String username, String model_id) {
+    public User ensureUserExists(String username, String modelId) {
         Optional<User> userOpt = userRepo.findByUsername(username);
         
         if (userOpt.isPresent()) {
             User user = userOpt.get();
 
 
-            if (model_id != null && !model_id.isBlank()) {
-                String current = user.getModel_id();
+            if (modelId != null && !modelId.isBlank()) {
+                String current = user.getModelId();
                 if (current == null || current.isBlank()) {
-                    user.setModel_id(model_id);
+                    user.setModelId(modelId);
                 } else {
                     // Only add if not already present
                     String[] ids = current.split(",");
                     boolean exists = false;
                     for (String id : ids) {
-                        if (id.trim().equals(model_id)) {
+                        if (id.trim().equals(modelId)) {
                             exists = true;
                             break;
                         }
                     }
                     if (!exists) {
-                        user.setModel_id(current + "," + model_id);
+                        user.setModelId(current + "," + modelId);
                     }
                 }
 
@@ -59,7 +54,7 @@ public class UserService {
             user.setUsername(username);
             user.setRole(Role.REGULAR);
             user.setMessage(" ");
-            user.setModel_id(model_id);
+            user.setModelId(modelId);
             return userRepo.save(user);
         }
     }
