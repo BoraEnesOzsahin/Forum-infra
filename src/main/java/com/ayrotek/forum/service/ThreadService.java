@@ -2,14 +2,8 @@ package com.ayrotek.forum.service;
 
 import com.ayrotek.forum.entity.Thread;
 import com.ayrotek.forum.repo.ThreadRepo;
-import com.ayrotek.forum.service.UserService;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.Optional;
-
-
-
 
 @Service
 public class ThreadService {
@@ -35,20 +29,12 @@ public class ThreadService {
         threadRepo.deleteById(id);
     }
 
-
-
      public Thread createThread(Thread thread) {
-        // Ensure user exists before creating thread
-    userService.ensureUserExists(String.valueOf(thread.getUserId()), thread.getModelId());
-        // ...existing code...
-        thread.setUserId(thread.getUserId());
-        thread.setTitle(thread.getTitle());
-        thread.setModelId(thread.getModelId());
-        thread.setRole(thread.getRole());
-        // createdAt is set by @PrePersist
+        // Simply save the thread - Lombok @Data provides all getters/setters
+        // and @PrePersist will set createdAt automatically
+        userService.ensureUserExists(thread.getUserId(), thread.getModelId());
         return threadRepo.save(thread);
     }
 
     
 }
- 

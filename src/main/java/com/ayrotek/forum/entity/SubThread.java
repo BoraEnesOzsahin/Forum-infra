@@ -16,11 +16,12 @@ public class SubThread {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable=false) private String userId;
-    @Column(nullable=false) private String title;
-    //@Column(columnDefinition="text") private String content;
-    /*@Column(nullable=false) private boolean locked = false;*/
-    @Column(nullable=false, updatable=false)
+    @Column(name = "user_id", nullable=false) 
+    private String userId;
+    @Column(name = "title", nullable=false) private String title;
+
+    //@Column(name = "content", columnDefinition="text") private String content;
+    @Column(name = "created_at", nullable=false, updatable=false)
     private Instant createdAt;
 
     @PrePersist

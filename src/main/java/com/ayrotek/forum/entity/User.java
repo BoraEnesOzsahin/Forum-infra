@@ -15,13 +15,14 @@ import jakarta.persistence.PrePersist;
 @Data
 @NoArgsConstructor
 public class User {
-    @Id @GeneratedValue private Long id;
+    @Id @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY) 
+    private Long id;
     @Column(nullable=false, unique=true) private String username;
     @Column private String message;
-    @Column private String modelId;
+    @Column(name = "model_id") private String modelId;
     @Column(nullable=false) @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.ORDINAL)
     private Role role;
-    @Column(nullable=false, updatable=false)
+    @Column(name = "created_at", nullable=false, updatable=false)
     private java.time.Instant createdAt;
 
     @PrePersist

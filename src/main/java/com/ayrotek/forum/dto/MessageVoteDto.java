@@ -8,12 +8,13 @@ public class MessageVoteDto {
     private boolean upvoted;
     private Instant createdAt;
     private Instant updatedAt;
+    private String username;
 
     // Getters and setters
     public Long getMessageId() { return messageId; }
     public void setMessageId(Long messageId) { this.messageId = messageId; }
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
     public boolean isUpvoted() { return upvoted; }
     public void setUpvoted(boolean upvoted) { this.upvoted = upvoted; }
     public Instant getCreatedAt() { return createdAt; }

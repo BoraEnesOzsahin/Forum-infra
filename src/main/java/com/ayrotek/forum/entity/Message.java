@@ -17,19 +17,22 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable=false) private String userId;
+    @Column(name = "user_id", nullable=false) 
+    private String userId;
     @Column(nullable=false) private String body;
-    @Column(nullable=false, updatable=false)
+    @Column(name = "created_at", nullable=false, updatable=false)
     private Instant createdAt;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = java.time.Instant.now();
     }
-    @Column(nullable=false) private int upvoteCount = 0; // cached
+    @Column(name = "upvote_count", nullable=false) 
+    private int upvoteCount = 0; // cached
     @Column(nullable=false) private boolean deleted = false;
 
-    @Column private Instant updatedAt;
+    @Column(name = "updated_at") 
+    private Instant updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "subthread_id", nullable = false)

@@ -1,5 +1,6 @@
 package com.ayrotek.forum.service;
 import com.ayrotek.forum.entity.SubThread;
+import com.ayrotek.forum.exception.MissingRelationException;
 import com.ayrotek.forum.repo.SubThreadRepo;
 import com.ayrotek.forum.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,11 @@ public class SubThreadService {
     }
 
     public List<SubThread> getAllSubThreadsByThreadId(Long threadId) {
+
+        if(subThreadRepo.count() < threadId){
+            throw new IllegalArgumentException("No such thread with ID: " + threadId);
+        }
+
         return subThreadRepo.findByThreadId(threadId);
     }
 
@@ -33,10 +39,17 @@ public class SubThreadService {
     }
 
     public SubThread createSubThread(SubThread subThread) {
-        // Ensure user exists before creating subthread
-        // Fetch model_id from the parent thread to enforce the NOT NULL constraint
-        String modelId = subThread.getThread().getModelId();
-        userService.ensureUserExists(subThread.getUserId(), modelId);
+        // Validate that subthread has a parent thread
+        if (subThread.getThread() == null) {
+            throw new MissingRelationException("SubThread must have a parent Thread");
+        }
+        
+        // Get the thread's model_id - this ensures consistency across the forum
+        String threadModelId = subThread.getThread().getModelId();
+        
+        // Ensure user exists and validate that user's model_id matches thread's model_id
+        // This prevents users from different models from posting in threads from other models
+        userService.ensureUserExists(subThread.getUserId(), threadModelId);
 
         subThread.setTitle(subThread.getTitle());
         //subThread.setContent(subThread.getContent());

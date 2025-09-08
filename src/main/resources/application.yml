@@ -30,8 +30,6 @@ spring:
   # Redis disabled for local development
   cache:
     type: none
-
-  spring:
   session:
     store-type: none
     

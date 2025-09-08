@@ -3,6 +3,8 @@ package com.ayrotek.forum.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import com.ayrotek.forum.service.SubThreadService;
 import com.ayrotek.forum.service.ThreadService;
@@ -10,19 +12,10 @@ import com.ayrotek.forum.entity.SubThread;
 import com.ayrotek.forum.entity.Thread;
 import com.ayrotek.forum.dto.SubThreadDto;
 import com.ayrotek.forum.dto.DtoMapper;
-
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import com.ayrotek.forum.entity.ServerResponse;
 
 @RestController
 @RequestMapping("/subThreads")
-
 public class SubThreadController {
     private final SubThreadService subThreadService;
     private final ThreadService threadService;
@@ -33,35 +26,51 @@ public class SubThreadController {
         this.threadService = threadService;
     }
 
-    @GetMapping("/allThreadsByThreadId/{threadId}")
-    public ServerResponse getAllSubThreads(@PathVariable Long threadId) {
-        List<SubThread> subThreads = subThreadService.getAllSubThreadsByThreadId(threadId);
-        return new ServerResponse(true, "SubThreads fetched successfully", DtoMapper.toSubThreadDtoList(subThreads));
+    @GetMapping("/allSubThreadsByThreadId/{threadId}")
+    public ResponseEntity<ServerResponse> getAllSubThreads(@PathVariable Long threadId) {
+        try {
+            List<SubThread> subThreads = subThreadService.getAllSubThreadsByThreadId(threadId);
+            return ResponseEntity.ok(new ServerResponse(true, "SubThreads fetched successfully", DtoMapper.toSubThreadDtoList(subThreads)));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ServerResponse(false, "Error fetching subthreads: " + e.getMessage(), null));
+        }
     }
-
 
     @GetMapping("/{id}")
-    public ServerResponse getSubThreadById(@PathVariable Long id) {
-        SubThread subThread = subThreadService.getSubThreadById(id);
-        if (subThread == null) {
-            return new ServerResponse(false, "SubThread not found", null);
+    public ResponseEntity<ServerResponse> getSubThreadById(@PathVariable Long id) {
+        try {
+            SubThread subThread = subThreadService.getSubThreadById(id);
+            if (subThread == null) {
+                return ResponseEntity.status(404).body(new ServerResponse(false, "SubThread not found", null));
+            }
+            return ResponseEntity.ok(new ServerResponse(true, "SubThread fetched successfully", DtoMapper.toDto(subThread)));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ServerResponse(false, "Error fetching subthread: " + e.getMessage(), null));
         }
-        return new ServerResponse(true, "SubThread fetched successfully", DtoMapper.toDto(subThread));
     }
 
-
     @PostMapping("/createSubThread")
-    public ServerResponse createSubThread(@RequestBody SubThreadDto subThreadDto) {
-        Thread thread = threadService.getThreadById(subThreadDto.getThreadId());
-        SubThread subThread = DtoMapper.toEntity(subThreadDto, thread);
-        SubThread saved = subThreadService.createSubThread(subThread);
-        return new ServerResponse(true, "SubThread created successfully", DtoMapper.toDto(saved));
+    public ResponseEntity<ServerResponse> createSubThread(@RequestBody SubThreadDto subThreadDto) {
+        try {
+            Thread thread = threadService.getThreadById(subThreadDto.getThreadId());
+            if (thread == null) {
+                return ResponseEntity.status(404).body(new ServerResponse(false, "Thread not found", null));
+            }
+            SubThread subThread = DtoMapper.toEntity(subThreadDto, thread);
+            SubThread saved = subThreadService.createSubThread(subThread);
+            return ResponseEntity.ok(new ServerResponse(true, "SubThread created successfully", DtoMapper.toDto(saved)));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ServerResponse(false, "Error creating subthread: " + e.getMessage(), null));
+        }
     }
 
     @DeleteMapping("/deleteSubThread/{id}")
-    public ServerResponse deleteSubThread(@PathVariable Long id) {
-        subThreadService.deleteSubThread(id);
-        return new ServerResponse(true, "SubThread deleted successfully", null);
+    public ResponseEntity<ServerResponse> deleteSubThread(@PathVariable Long id) {
+        try {
+            subThreadService.deleteSubThread(id);
+            return ResponseEntity.ok(new ServerResponse(true, "SubThread deleted successfully", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ServerResponse(false, "Error deleting subthread: " + e.getMessage(), null));
+        }
     }
-
 }

@@ -16,15 +16,15 @@ public class Thread {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable=false) private Long userId;
+    @Column(name = "user_id", nullable=false) private String userId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable=false) private VehicleType role; // Commercial or Personal
-    @Column(nullable=false) private String modelId;
+    @Column(name = "model_id", nullable=false) private String modelId;
     @Column(nullable=false) private String title;
     /*@Column(nullable=false) private boolean locked = false;*/
 
-    @Column(nullable=false, updatable=false)
+    @Column(name = "created_at", nullable=false, updatable=false)
     private Instant createdAt;
 
     @PrePersist
