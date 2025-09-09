@@ -19,7 +19,7 @@ public class Thread {
     @Column(name = "user_id", nullable=false) private String userId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable=false) private VehicleType role; // Commercial or Personal
+    @Column(nullable=false) private VehicleType type; // Commercial or Personal
     @Column(name = "model_id", nullable=false) private String modelId;
     @Column(nullable=false) private String title;
     /*@Column(nullable=false) private boolean locked = false;*/

@@ -2,6 +2,7 @@ package com.ayrotek.forum.dto;
 
 import com.ayrotek.forum.entity.*;
 import java.util.List;
+import com.ayrotek.forum.entity.Thread;
 import java.util.stream.Collectors;
 
 public class DtoMapper {
@@ -12,7 +13,7 @@ public class DtoMapper {
         ThreadDto dto = new ThreadDto();
         dto.setId(thread.getId());
         // The username will be set by the service
-        dto.setVehicleType(thread.getRole().toString());
+        dto.setVehicleType(thread.getType());
         dto.setModelId(thread.getModelId());
         dto.setTitle(thread.getTitle());
         dto.setCreatedAt(thread.getCreatedAt());
@@ -21,9 +22,9 @@ public class DtoMapper {
 
     public static Thread toEntity(ThreadDto dto) {
         if (dto == null) return null;
-        Thread thread = new Thread();
+        com.ayrotek.forum.entity.Thread thread = new com.ayrotek.forum.entity.Thread();
         // The userId will be set by the service
-        thread.setRole(Role.valueOf(dto.getVehicleType().toUpperCase()));
+        thread.setType(com.ayrotek.forum.entity.Thread.VehicleType.valueOf(dto.getVehicleType().name()));
         thread.setModelId(dto.getModelId());
         thread.setTitle(dto.getTitle());
         return thread;
