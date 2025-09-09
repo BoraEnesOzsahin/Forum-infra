@@ -32,7 +32,7 @@ public class User {
 
     public enum Role {
         ADMIN,
-        REGULAR
+        CITIZEN
     }
 
     // Lombok will generate getters and setters

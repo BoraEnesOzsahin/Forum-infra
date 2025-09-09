@@ -49,7 +49,10 @@ public class SubThreadService {
         
         // Ensure user exists and validate that user's model_id matches thread's model_id
         // This prevents users from different models from posting in threads from other models
-        userService.ensureUserExists(subThread.getUserId(), threadModelId);
+        String Temp_id = subThread.getUserId();
+        String username = subThreadRepo.findUsernameByUserId(Temp_id);
+        
+        userService.ensureUserExists(username, threadModelId);
 
         subThread.setTitle(subThread.getTitle());
         //subThread.setContent(subThread.getContent());

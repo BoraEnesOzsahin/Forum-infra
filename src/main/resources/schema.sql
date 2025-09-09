@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(255) NOT NULL UNIQUE,
     message TEXT,
     model_id VARCHAR(255),
-    role SMALLINT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL
+    role VARCHAR(50),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create the 'threads' table
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS threads (
     role VARCHAR(255) NOT NULL,
     model_id VARCHAR(255) NOT NULL,
     title VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create the 'subthreads' table
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS subthreads (
     id BIGSERIAL PRIMARY KEY,
     user_id VARCHAR(255) NOT NULL,
     title VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     thread_id BIGINT NOT NULL,
     FOREIGN KEY (thread_id) REFERENCES threads(id)
 );
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS messages (
     id BIGSERIAL PRIMARY KEY,
     user_id VARCHAR(255) NOT NULL,
     body TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     upvote_count INT NOT NULL DEFAULT 0,
     deleted BOOLEAN NOT NULL DEFAULT FALSE,
     updated_at TIMESTAMP WITH TIME ZONE,
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS message_vote (
     message_id BIGINT NOT NULL,
     user_id VARCHAR(255) NOT NULL,
     upvoted BOOLEAN NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE,
     PRIMARY KEY (message_id, user_id),
     FOREIGN KEY (message_id) REFERENCES messages(id)

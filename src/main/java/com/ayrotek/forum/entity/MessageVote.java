@@ -20,7 +20,7 @@ public class MessageVote {
 
     @Id
     @Column(name="user_id", nullable=false)
-    private String userId;
+    private Long userId;
 
     @Column(nullable=false)
     private boolean upvoted; // true for upvote, false for downvote

@@ -25,7 +25,7 @@ public class MessageVoteController {
     @PostMapping("/createMessageVote")
     public ServerResponse createMessageVote(@RequestBody MessageVoteDto messageVoteDto) {
         MessageVote messageVote = DtoMapper.toEntity(messageVoteDto);
-        messageVoteService.saveVote(messageVote);
+        messageVoteService.saveVote(messageVote, messageVoteDto.getUsername() );
         return new ServerResponse(true, "Message vote saved successfully", DtoMapper.toDto(messageVote));
     }
 }

@@ -7,4 +7,6 @@ import java.util.List;
 public interface SubThreadRepo extends JpaRepository<SubThread, Long> {
 
     List<SubThread> findByThreadId(Long threadId);
+
+    String findUsernameByUserId(String userId);
 }

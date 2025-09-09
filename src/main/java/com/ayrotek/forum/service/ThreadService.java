@@ -4,6 +4,7 @@ import com.ayrotek.forum.entity.Thread;
 import com.ayrotek.forum.repo.ThreadRepo;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ThreadService {
@@ -24,15 +25,19 @@ public class ThreadService {
         return threadRepo.findById(id).orElse(null);
     }
 
-
+    @Transactional
     public void deleteThread(Long id) {
+        
         threadRepo.deleteById(id);
     }
 
-     public Thread createThread(Thread thread) {
-        // Simply save the thread - Lombok @Data provides all getters/setters
-        // and @PrePersist will set createdAt automatically
-        userService.ensureUserExists(thread.getUserId(), thread.getModelId());
+    @Transactional
+    public Thread createThread(Thread thread, String username) {
+        // The username is now passed directly to the service.
+        // This is much more efficient.
+        userService.ensureUserExists(username, thread.getModelId());
+
+        // Save the thread. @PrePersist will set createdAt automatically.
         return threadRepo.save(thread);
     }
 

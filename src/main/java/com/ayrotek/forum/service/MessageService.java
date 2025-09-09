@@ -34,10 +34,12 @@ public class MessageService {
         // Ensure user exists before creating message
         // Fetch model_id from the grandparent thread to enforce the NOT NULL constraint
         String modelId = message.getSubThread().getThread().getModelId();
-        userService.ensureUserExists(message.getUserId(), modelId);
-        
+        String Temp_id = message.getUserId();
+        String username = messageRepo.findUsernameByUserId(Temp_id);
+        userService.ensureUserExists(username, modelId);
+
         Message savedMessage = messageRepo.save(message);
-        userService.addMessageToUser(savedMessage.getUserId(), savedMessage.getBody());
+        //userService.addMessageToUser(savedMessage.getUserId(), savedMessage.getBody());
 
         return savedMessage;
     }
@@ -53,5 +55,15 @@ public class MessageService {
             return messageRepo.save(message);
         }).orElse(null);
     }*/
+
+    public Message updateMessage(Long id, Message updatedMessage) {
+        return messageRepo.findById(id).map(message -> {
+            message.setBody(updatedMessage.getBody());
+            message.setUpdatedAt(java.time.Instant.now());
+            Message savedMessage = messageRepo.save(message);
+            //userService.addMessageToUser(savedMessage.getUserId(), savedMessage.getBody());
+            return savedMessage;
+        }).orElse(null);
+    }
 
 }
