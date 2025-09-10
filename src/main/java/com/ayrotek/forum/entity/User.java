@@ -20,7 +20,7 @@ public class User {
     @Column(nullable=false, unique=true) private String username;
     @Column private String message;
     @Column(name = "model_id") private String modelId;
-    @Column(nullable=false) @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.ORDINAL)
+    @Column(nullable=false) @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
     private Role role;
     @Column(name = "created_at", nullable=false, updatable=false)
     private java.time.Instant createdAt;

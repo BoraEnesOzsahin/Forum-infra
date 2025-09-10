@@ -17,6 +17,7 @@ import com.ayrotek.forum.entity.ServerResponse;
 import com.ayrotek.forum.dto.MessageDto;
 import com.ayrotek.forum.dto.DtoMapper;
 import com.ayrotek.forum.service.SubThreadService;
+import com.ayrotek.forum.dto.DeleteMessageRequestDto;
 
 
 import com.ayrotek.forum.entity.ServerResponse;
@@ -40,15 +41,15 @@ public class MessageController {
     public ServerResponse createMessage(@RequestBody MessageDto messageDto) {
         SubThread subThread = subThreadService.getSubThreadById(messageDto.getSubThreadId());
         Message message = DtoMapper.toEntity(messageDto, subThread);
-        Message saved = messageService.createMessage(message);
+        Message saved = messageService.createMessage(message, messageDto.getUsername());
         return new ServerResponse(true, "Message created successfully", DtoMapper.toDto(saved));
     }
 
     
 
     @DeleteMapping("/deleteMessage/{id}")
-    public ServerResponse deleteMessage(@PathVariable Long id) {
-        messageService.deleteMessage(id);
+    public ServerResponse deleteMessage(@PathVariable Long id, @RequestBody DeleteMessageRequestDto deleteRequest) {
+        messageService.deleteMessage(id, deleteRequest.getUsername());
         return new ServerResponse(true, "Message deleted successfully", null);
     }
 
