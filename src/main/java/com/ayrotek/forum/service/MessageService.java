@@ -79,7 +79,7 @@ public class MessageService {
         }).orElse(null);
     }*/
 
-    public Message updateMessage(Long id, Message updatedMessage, String username) {
+    public Message updateMessage(Long id, String newBody, String username) {
         
          // Check if the requesting user is an admin or the owner of the message
          // if (requestingUser.getRole() == Role.ADMIN || ... )
@@ -88,7 +88,7 @@ public class MessageService {
         if (requestingUser.getRole().toString().equals("ADMIN") || requestingUser.getId().toString().equals(messageRepo.findById(id).orElse(null).getUserId().toString())) {
 
         return messageRepo.findById(id).map(message -> {
-            message.setBody(updatedMessage.getBody());
+            message.setBody(newBody);
             message.setUpdatedAt(java.time.Instant.now());
             Message savedMessage = messageRepo.save(message);
             //userService.addMessageToUser(savedMessage.getUserId(), savedMessage.getBody());

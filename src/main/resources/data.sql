@@ -17,12 +17,12 @@ INSERT INTO users (username, message, model_id, role) VALUES
 ('forum_moderator', 'Here to keep discussions friendly and helpful.', 'model_mod_001', 'ADMIN');
 
 -- Insert dummy threads (user_id now refers to the auto-generated ID from the users table)
-INSERT INTO threads (user_id, role, model_id, title) VALUES 
-(1, 'ADMIN', 'model_thread_001', 'Welcome to the Forum'),
-(2, 'CITIZEN', 'model_thread_002', 'Best Practices for Vehicle Maintenance'),
-(3, 'CITIZEN', 'model_thread_003', 'New Technology Trends in Automotive'),
-(4, 'CITIZEN', 'model_thread_004', 'Share Your Car Photos'),
-(5, 'CITIZEN', 'model_thread_005', 'Programming Tips and Tricks');
+INSERT INTO threads (user_id, type, model_id, title) VALUES 
+(1, 'PERSONAL', 'model_thread_001', 'Welcome to the Forum'),
+(2, 'COMMERCIAL', 'model_thread_002', 'Best Practices for Vehicle Maintenance'),
+(3, 'PERSONAL', 'model_thread_003', 'New Technology Trends in Automotive'),
+(4, 'PERSONAL', 'model_thread_004', 'Share Your Car Photos'),
+(5, 'COMMERCIAL', 'model_thread_005', 'Programming Tips and Tricks');
 
 -- Insert dummy subthreads
 INSERT INTO subthreads (user_id, title, thread_id) VALUES 

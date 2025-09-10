@@ -3,6 +3,7 @@ package com.ayrotek.forum.controller;
 import java.time.Instant;
 import java.util.List;
 
+import org.hibernate.sql.Update;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,6 +19,7 @@ import com.ayrotek.forum.dto.MessageDto;
 import com.ayrotek.forum.dto.DtoMapper;
 import com.ayrotek.forum.service.SubThreadService;
 import com.ayrotek.forum.dto.DeleteMessageRequestDto;
+import com.ayrotek.forum.dto.UpdateMessageRequestDto;
 
 
 import com.ayrotek.forum.entity.ServerResponse;
@@ -61,12 +63,13 @@ public class MessageController {
         return new ServerResponse(true, "Messages fetched successfully", DtoMapper.toMessageDtoList(messages));
     }
 
-    /*@PutMapping("/updateMessage/{id}")
-    public ServerResponse updateMessage(@PathVariable Long id, @RequestBody MessageDto messageDto) {
-        SubThread subThread = subThreadService.getSubThreadById(messageDto.getSubThreadId());
-        Message updatedEntity = DtoMapper.toEntity(messageDto, subThread);
-        Message updated = messageService.updateMessage(id, updatedEntity);
+    @PutMapping("/updateMessage/{id}")
+    public ServerResponse updateMessage(@PathVariable Long id, @RequestBody MessageDto updateRequest) {
+        //Message oldMessage = messageService.getMessageById(id);
+        //SubThread subThread = subThreadService.getSubThreadById(oldMessage.getSubThread().getId());
+        //Message updatedEntity = DtoMapper.toEntity(updateRequest, subThread);
+        Message updated = messageService.updateMessage(id, updateRequest.getBody(), updateRequest.getUsername());
         return new ServerResponse(true, "Message updated successfully", DtoMapper.toDto(updated));
-    }*/
+    }
 
 }

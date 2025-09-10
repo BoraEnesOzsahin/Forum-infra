@@ -17,6 +17,7 @@ public class ThreadService {
         this.userService = userService;
     }
 
+    // **SIMPLE**: Just return the entities from the database
     public List<Thread> getAllThreads() {
         return threadRepo.findAll();
     }
@@ -27,19 +28,13 @@ public class ThreadService {
 
     @Transactional
     public void deleteThread(Long id) {
-        
         threadRepo.deleteById(id);
     }
 
     @Transactional
     public Thread createThread(Thread thread, String username) {
-        // The username is now passed directly to the service.
-        // This is much more efficient.
         userService.ensureUserExists(username, thread.getModelId());
-
-        // Save the thread. @PrePersist will set createdAt automatically.
         return threadRepo.save(thread);
     }
-
-    
 }
+

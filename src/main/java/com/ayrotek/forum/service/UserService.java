@@ -55,6 +55,10 @@ public class UserService {
         return userRepo.findByUsername(username).orElse(null);
     }
 
+    public User getUserById(Long id) {
+        return userRepo.findById(id).orElse(null);
+    }
+
     public void addMessageToUser(String username, String messageCont){
         userRepo.findByUsername(username).ifPresent(user -> {
             String currentMessage = user.getMessage();

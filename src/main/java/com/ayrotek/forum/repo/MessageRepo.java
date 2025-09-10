@@ -12,5 +12,6 @@ public interface MessageRepo extends JpaRepository<Message, Long> {
 
     String findUsernameByUserId(String userId);
 
+    Message findMessageById(Long id);
 }
 

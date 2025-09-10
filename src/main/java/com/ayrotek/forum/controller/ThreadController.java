@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.http.ResponseEntity;
 import java.util.List;
+import java.util.stream.Collectors;
 import com.ayrotek.forum.entity.Thread;
 import com.ayrotek.forum.entity.ServerResponse;
 import com.ayrotek.forum.entity.User;
@@ -33,8 +34,29 @@ public class ThreadController {
 
     @GetMapping("/all")
     public ServerResponse getAllThreads() {
-        List<Thread> threads = threadService.getAllThreads();
-        return new ServerResponse(true, "Threads fetched successfully", DtoMapper.toThreadDtoList(threads));
+        List<Thread> threads = threadService.getAllThreads(); // Gets entities
+        
+        // Convert to DTOs and populate usernames in the controller
+        List<ThreadDto> threadDtos = threads.stream().map(thread -> {
+            ThreadDto dto = DtoMapper.toDto(thread);
+            
+            try {
+                Long userId = Long.parseLong(thread.getUserId());
+                User user = userService.getUserById(userId);
+                if (user != null) {
+                    dto.setUsername(user.getUsername());
+                }
+            } catch (NumberFormatException e) {
+                User user = userService.getUserByUsername(thread.getUserId());
+                if (user != null) {
+                    dto.setUsername(user.getUsername());
+                }
+            }
+            
+            return dto;
+        }).collect(Collectors.toList());
+        
+        return new ServerResponse(true, "Threads fetched successfully", threadDtos);
     }
 
     @GetMapping("/{id}")
@@ -43,7 +65,24 @@ public class ThreadController {
         if (thread == null) {
             return new ServerResponse(false, "Thread not found", null);
         }
-        return new ServerResponse(true, "Thread fetched successfully", DtoMapper.toDto(thread));
+        
+        // Convert to DTO and populate username
+        ThreadDto dto = DtoMapper.toDto(thread);
+        
+        try {
+            Long userId = Long.parseLong(thread.getUserId());
+            User user = userService.getUserById(userId);
+            if (user != null) {
+                dto.setUsername(user.getUsername());
+            }
+        } catch (NumberFormatException e) {
+            User user = userService.getUserByUsername(thread.getUserId());
+            if (user != null) {
+                dto.setUsername(user.getUsername());
+            }
+        }
+        
+        return new ServerResponse(true, "Thread fetched successfully", dto);
     }
 
     @PostMapping("/createThread")
