@@ -234,4 +234,198 @@ All API responses follow this consistent format:
 
 ---
 
-**🚀 Happy API Testing!** Use the Swagger UI interface for easy testing and exploration of all available endpoints. Remember to use **usernames** (not user IDs) in your API calls!
+# Forum API (Threads / SubThreads / Messages / Votes)
+
+## Base
+All responses use:
+{
+  "success": true|false,
+  "message": "info",
+  "data": ...
+}
+
+Authentication: current user resolved from security context (JWT/session) OR explicitly via `username` field/query parameter where shown.
+
+---
+
+## Threads (if implemented similarly)
+(Only include if you have these; otherwise skip.)
+POST /threads/createThread  
+POST /threads/updateThread/{id}  
+DELETE /threads/deleteThread/{id}  
+GET /threads/viewThread/{id}  
+GET /threads/viewThreadsByModel/{modelId}
+
+Body (create/update):
+{
+  "title": "Engine discussion",
+  "vehicleType": "CAR",
+  "modelId": "model123",
+  "username": "john_doe"        // optional (admin can act as others)
+}
+
+---
+
+## SubThreads
+POST /subThreads/createSubThread  
+POST /subThreads/updateSubThread/{id}  
+DELETE /subThreads/deleteSubThread/{id}  
+GET /subThreads/{id}  
+GET /subThreads/allSubThreadsByThreadId/{threadId}
+
+Create body:
+{
+  "threadId": 5,
+  "title": "Cylinder head details",
+  "username": "john_doe"
+}
+
+Update body (only mutable fields):
+{
+  "title": "Updated title",
+  "username": "john_doe"
+}
+
+Sample success:
+{
+  "success": true,
+  "message": "SubThread created successfully",
+  "data": {
+    "id": 12,
+    "threadId": 5,
+    "title": "Cylinder head details",
+    "username": "john_doe",
+    "createdAt": "2025-09-11T10:22:15Z"
+  }
+}
+
+---
+
+## Messages
+GET /messages/viewMessage/{id}?includeVoters=false  
+GET /messages/viewMessagesBySubThread/{subThreadId}?includeVoters=true  
+POST /messages/createMessage  
+PATCH /messages/updateMessage/{id}  
+DELETE /messages/deleteMessage/{id}?username=john_doe (optional if context auth)
+
+Create body:
+{
+  "subThreadId": 12,
+  "body": "Check torque specs.",
+  "username": "john_doe"
+}
+
+Update body:
+{
+  "body": "Updated content",
+  "username": "john_doe"
+}
+
+Single view (includeVoters=true):
+{
+  "success": true,
+  "message": "Message fetched",
+  "data": {
+    "id": 33,
+    "subThreadId": 12,
+    "userId": 2,
+    "username": "john_doe",
+    "body": "Check torque specs.",
+    "createdAt": "...",
+    "updatedAt": null,
+    "upvoteCount": 4,
+    "voters": ["alice","bob","charlie","dave"]
+  }
+}
+
+---
+
+## Message Votes
+POST /messageVotes/createMessageVote  
+POST /messageVotes/updateMessageVote (toggle / change)  
+DELETE /messageVotes/deleteMessageVote?messageId=33&username=john_doe  
+GET /messageVotes/viewMessageVotes/{messageId}
+
+Create / toggle body:
+{
+  "messageId": 33,
+  "upvoted": true,
+  "username": "john_doe"
+}
+
+Vote list:
+{
+  "success": true,
+  "message": "Votes fetched",
+  "data": [
+    { "messageId": 33, "userId": 2, "username": "john_doe", "upvoted": true, "createdAt": "...", "updatedAt": null }
+  ]
+}
+
+Rules:
+- Non-admin: user.modelId must match parent thread.modelId.
+- Admin bypasses modelId restrictions.
+- One vote per (user,message). Same vote twice removes it (toggle logic).
+- Upvote count maintained on Message.
+
+---
+
+## Error Examples
+401:
+{
+  "success": false,
+  "message": "No user context",
+  "data": null
+}
+
+400 (model mismatch):
+{
+  "success": false,
+  "message": "Model mismatch: user cannot post to this thread",
+  "data": null
+}
+
+---
+
+## cURL Examples
+
+Create message:
+curl -X POST http://localhost:8080/messages/createMessage ^
+  -H "Content-Type: application/json" ^
+  -d "{\"subThreadId\":12,\"body\":\"Check torque specs.\",\"username\":\"john_doe\"}"
+
+View messages (desc by upvotes):
+curl http://localhost:8080/messages/viewMessagesBySubThread/12
+
+Vote:
+curl -X POST http://localhost:8080/messageVotes/createMessageVote ^
+  -H "Content-Type: application/json" ^
+  -d "{\"messageId\":33,\"upvoted\":true,\"username\":\"john_doe\"}"
+
+Toggle (remove same upvote):
+curl -X POST http://localhost:8080/messageVotes/updateMessageVote ^
+  -H "Content-Type: application/json" ^
+  -d "{\"messageId\":33,\"upvoted\":true,\"username\":\"john_doe\"}"
+
+---
+
+## Persistence / Schema Notes
+- Avoid schema reset: remove DROP statements or set spring.sql.init.mode=never.
+- Use BIGINT for user_id consistently (users.id FK).
+- Fetch joins used to prevent LazyInitializationException on message -> subThread -> thread chain.
+
+---
+
+## Minimal Required Fields Summary
+Thread: title, vehicleType, modelId  
+SubThread: threadId, title  
+Message: subThreadId, body  
+Vote: messageId, upvoted (true/false)  
+
+Username optional if auth context supplies principal; required otherwise.
+
+---
+
+## Admin Behavior
+- Admin can act across modelId boundaries.
+- Admin can
