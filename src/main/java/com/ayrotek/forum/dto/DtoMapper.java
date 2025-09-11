@@ -1,18 +1,20 @@
 package com.ayrotek.forum.dto;
 
-import com.ayrotek.forum.entity.*;
-import java.util.List;
+import com.ayrotek.forum.entity.Message;
+import com.ayrotek.forum.entity.MessageVote;
+import com.ayrotek.forum.entity.SubThread;
 import com.ayrotek.forum.entity.Thread;
+
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class DtoMapper {
 
-    // --- Thread ---
+    // Thread
     public static ThreadDto toDto(Thread thread) {
         if (thread == null) return null;
         ThreadDto dto = new ThreadDto();
         dto.setId(thread.getId());
-        // The username will be set by the service
         dto.setVehicleType(thread.getType());
         dto.setModelId(thread.getModelId());
         dto.setTitle(thread.getTitle());
@@ -22,90 +24,102 @@ public class DtoMapper {
 
     public static Thread toEntity(ThreadDto dto) {
         if (dto == null) return null;
-        com.ayrotek.forum.entity.Thread thread = new com.ayrotek.forum.entity.Thread();
-        // The userId will be set by the service
-        thread.setType(com.ayrotek.forum.entity.Thread.VehicleType.valueOf(dto.getVehicleType().name()));
+        Thread thread = new Thread();
+        if (dto.getVehicleType() != null) {
+            thread.setType(dto.getVehicleType());
+        }
         thread.setModelId(dto.getModelId());
         thread.setTitle(dto.getTitle());
         return thread;
     }
 
-    // --- SubThread ---
+    // SubThread
     public static SubThreadDto toDto(SubThread subThread) {
         if (subThread == null) return null;
         SubThreadDto dto = new SubThreadDto();
         dto.setId(subThread.getId());
+        dto.setTitle(subThread.getTitle());
         if (subThread.getThread() != null) {
             dto.setThreadId(subThread.getThread().getId());
         }
-        // The username will be set by the service
-        dto.setTitle(subThread.getTitle());
         dto.setCreatedAt(subThread.getCreatedAt());
         return dto;
     }
-    
-    public static SubThread toEntity(SubThreadDto dto, Thread thread) {
+
+    public static SubThread toEntity(SubThreadDto dto, Thread parentThread) {
         if (dto == null) return null;
-        SubThread subThread = new SubThread();
-        // The userId will be set by the service
-        subThread.setThread(thread);
-        subThread.setTitle(dto.getTitle());
-        return subThread;
+        SubThread st = new SubThread();
+        st.setTitle(dto.getTitle());
+        st.setThread(parentThread);
+        return st;
     }
 
-    // --- Message ---
+    // Message
     public static MessageDto toDto(Message message) {
         if (message == null) return null;
         MessageDto dto = new MessageDto();
         dto.setId(message.getId());
         dto.setBody(message.getBody());
         if (message.getSubThread() != null) {
-            dto.setSubThreadId(message.getSubThread().getId());
+            try {
+                dto.setSubThreadId(message.getSubThread().getId());
+            } catch (org.hibernate.LazyInitializationException ignored) {
+                // leave subThreadId null if not initialized
+            }
         }
-        // The username will be set by the service
+        if (message.getUserId() != null && message.getUserId().chars().allMatch(Character::isDigit)) {
+            dto.setUserId(Long.parseLong(message.getUserId()));
+        }
+        dto.setCreatedAt(message.getCreatedAt());
+        dto.setUpdatedAt(message.getUpdatedAt());
+        dto.setUpvoteCount(message.getUpvoteCount());
         return dto;
     }
-    
+
     public static Message toEntity(MessageDto dto, SubThread subThread) {
         if (dto == null) return null;
         Message message = new Message();
-        // The userId will be set by the service
         message.setBody(dto.getBody());
         message.setSubThread(subThread);
         return message;
     }
 
-    // --- MessageVote ---
+    // MessageVote
     public static MessageVoteDto toDto(MessageVote vote) {
         if (vote == null) return null;
         MessageVoteDto dto = new MessageVoteDto();
         dto.setMessageId(vote.getMessageId());
-        // The username will be set by the service
+        dto.setUserId(vote.getUserId());
         dto.setUpvoted(vote.isUpvoted());
         dto.setCreatedAt(vote.getCreatedAt());
         dto.setUpdatedAt(vote.getUpdatedAt());
         return dto;
     }
-    
+
     public static MessageVote toEntity(MessageVoteDto dto) {
         if (dto == null) return null;
         MessageVote vote = new MessageVote();
-        // The userId will be set by the service
-        vote.setMessageId(dto.getMessageId());
+        if (dto.getMessageId() != null || dto.getUserId() != null) {
+            vote.setMessageId(dto.getMessageId());
+            // userId set in service after user lookup
+        }
         vote.setUpvoted(dto.isUpvoted());
         return vote;
     }
 
-    // --- List Mappers ---
+    // List mappers
     public static List<ThreadDto> toThreadDtoList(List<Thread> threads) {
         return threads.stream().map(DtoMapper::toDto).collect(Collectors.toList());
     }
+
     public static List<SubThreadDto> toSubThreadDtoList(List<SubThread> subThreads) {
         return subThreads.stream().map(DtoMapper::toDto).collect(Collectors.toList());
     }
+
     public static List<MessageDto> toMessageDtoList(List<Message> messages) {
         return messages.stream().map(DtoMapper::toDto).collect(Collectors.toList());
     }
+
     public static List<MessageVoteDto> toMessageVoteDtoList(List<MessageVote> votes) {
         return votes.stream().map(DtoMapper::toDto).collect(Collectors.toList());
     }

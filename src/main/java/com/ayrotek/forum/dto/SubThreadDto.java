@@ -1,15 +1,13 @@
 package com.ayrotek.forum.dto;
 
-import java.time.Instant;
-
 public class SubThreadDto {
     private Long id;
     private Long threadId;
     private Long userId;
     private String title;
-    private String username;
+    private String username; // owner username (populated in responses)
     /*private String content;*/
-    private Instant createdAt;
+    private java.time.Instant createdAt;
 
     // Getters and setters
     public Long getId() { return id; }
@@ -22,6 +20,6 @@ public class SubThreadDto {
     public void setTitle(String title) { this.title = title; }
     /*public String getContent() { return content; }
     public void setContent(String content) { this.content = content; } */
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public java.time.Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(java.time.Instant createdAt) { this.createdAt = createdAt; }
 }

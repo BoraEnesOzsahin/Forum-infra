@@ -1,72 +1,61 @@
 package com.ayrotek.forum.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
-@Table(name="message_vote")
+@Table(name = "message_vote")
 @Data
-@NoArgsConstructor
-@IdClass(MessageVote.PK.class)
 public class MessageVote {
-    
-    @Id
-    @Column(name="message_id", nullable=false)
-    private Long messageId;
 
-    @Id
-    @Column(name="user_id", nullable=false)
-    private Long userId;
+    @EmbeddedId
+    private PK id;
 
-    @Column(nullable=false)
-    private boolean upvoted; // true for upvote, false for downvote
+    @Column(name = "upvoted", nullable = false)
+    private boolean upvoted;
 
-    @Column(nullable=false, updatable=false)
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private Instant createdAt;
 
-    @Column
+    @UpdateTimestamp
+    @Column(name = "updated_at")
     private Instant updatedAt;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = java.time.Instant.now();
+    // Convenience getters/setters
+    public Long getMessageId() {
+        return id != null ? id.getMessageId() : null;
+    }
+    public Long getUserId() {
+        return id != null ? id.getUserId() : null;
+    }
+    public void setMessageId(Long messageId) {
+        if (id == null) id = new PK();
+        id.setMessageId(messageId);
+    }
+    public void setUserId(Long userId) {
+        if (id == null) id = new PK();
+        id.setUserId(userId);
     }
 
-
-
-    /*@ManyToOne
-    @JoinColumn(name = "message_id", nullable = false)
-    private Message message;*/
-
-    // Composite primary key class
+    @Embeddable
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @EqualsAndHashCode
     public static class PK implements Serializable {
+        @Column(name = "message_id")
         private Long messageId;
-        private String userId;
 
-        public PK() {}
-
-        public PK(Long messageId, String userId) {
-            this.messageId = messageId;
-            this.userId = userId;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof PK)) return false;
-            PK pk = (PK) o;
-            return messageId.equals(pk.messageId) && userId.equals(pk.userId);
-        }
-
-        @Override
-        public int hashCode() {
-            return 31 * messageId.hashCode() + userId.hashCode();
-        }
-
-
+        @Column(name = "user_id")
+        private Long userId;
     }
 }

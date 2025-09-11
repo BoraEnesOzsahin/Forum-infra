@@ -17,6 +17,9 @@ import java.util.stream.Collectors;
 import com.ayrotek.forum.entity.Thread;
 import com.ayrotek.forum.entity.ServerResponse;
 import com.ayrotek.forum.entity.User;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 
 @RestController
@@ -34,28 +37,16 @@ public class ThreadController {
 
     @GetMapping("/all")
     public ServerResponse getAllThreads() {
-        List<Thread> threads = threadService.getAllThreads(); // Gets entities
-        
-        // Convert to DTOs and populate usernames in the controller
-        List<ThreadDto> threadDtos = threads.stream().map(thread -> {
-            ThreadDto dto = DtoMapper.toDto(thread);
-            
-            try {
-                Long userId = Long.parseLong(thread.getUserId());
-                User user = userService.getUserById(userId);
-                if (user != null) {
-                    dto.setUsername(user.getUsername());
-                }
-            } catch (NumberFormatException e) {
-                User user = userService.getUserByUsername(thread.getUserId());
-                if (user != null) {
-                    dto.setUsername(user.getUsername());
-                }
-            }
-            
-            return dto;
-        }).collect(Collectors.toList());
-        
+        List<Thread> threads = threadService.getAllThreads();
+
+        List<ThreadDto> threadDtos = threads.stream()
+                .map(thread -> {
+                    ThreadDto dto = DtoMapper.toDto(thread);
+                    populateUsername(thread, dto);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
         return new ServerResponse(true, "Threads fetched successfully", threadDtos);
     }
 
@@ -65,51 +56,106 @@ public class ThreadController {
         if (thread == null) {
             return new ServerResponse(false, "Thread not found", null);
         }
-        
-        // Convert to DTO and populate username
         ThreadDto dto = DtoMapper.toDto(thread);
-        
-        try {
-            Long userId = Long.parseLong(thread.getUserId());
-            User user = userService.getUserById(userId);
-            if (user != null) {
-                dto.setUsername(user.getUsername());
-            }
-        } catch (NumberFormatException e) {
-            User user = userService.getUserByUsername(thread.getUserId());
-            if (user != null) {
-                dto.setUsername(user.getUsername());
-            }
-        }
-        
+        populateUsername(thread, dto);
         return new ServerResponse(true, "Thread fetched successfully", dto);
     }
 
     @PostMapping("/createThread")
     public ResponseEntity<ServerResponse> createThread(@RequestBody ThreadDto threadDto) {
         try {
-            // Get the user by username to find their ID
-            User user = userService.getUserByUsername(threadDto.getUsername());
-            if (user == null) {
-                return ResponseEntity.status(404).body(new ServerResponse(false, "User not found", null));
+            String actingUsername = firstNonNull(threadDto.getUsername(), currentUsername());
+            if (actingUsername == null) {
+                return ResponseEntity.status(401)
+                        .body(new ServerResponse(false, "No user context provided", null));
+            }
+            Thread thread = DtoMapper.toEntity(threadDto);
+            Thread saved = threadService.createThread(thread, actingUsername);
+            ThreadDto responseDto = DtoMapper.toDto(saved);
+            populateUsername(saved, responseDto);
+            return ResponseEntity.ok(new ServerResponse(true, "Thread created successfully", responseDto));
+        } catch (Exception e) {
+            return ResponseEntity.status(400)
+                    .body(new ServerResponse(false, "Error creating thread: " + e.getMessage(), null));
+        }
+    }
+
+    @PostMapping("/updateThread/{id}")
+    public ResponseEntity<ServerResponse> updateThread(@PathVariable Long id,
+                                                       @RequestBody ThreadDto threadDto) {
+        try {
+            Thread existing = threadService.getThreadById(id);
+            if (existing == null) {
+                return ResponseEntity.status(404).body(new ServerResponse(false, "Thread not found", null));
+            }
+            String actingUsername = firstNonNull(threadDto.getUsername(), currentUsername());
+            if (actingUsername == null) {
+                return ResponseEntity.status(401)
+                        .body(new ServerResponse(false, "No user context provided", null));
             }
 
-            // Convert DTO to entity and set the user ID
-            Thread thread = DtoMapper.toEntity(threadDto);
-            thread.setUserId(String.valueOf(user.getId()));
+            Thread incoming = DtoMapper.toEntity(threadDto); // includes potential modelId (admin only)
+            Thread saved = threadService.updateExistingThread(existing, incoming, actingUsername);
 
-            // Call the service with the entity AND the username for validation
-            Thread saved = threadService.createThread(thread, threadDto.getUsername());
-            
-            return ResponseEntity.ok(new ServerResponse(true, "Thread created successfully", DtoMapper.toDto(saved)));
+            ThreadDto responseDto = DtoMapper.toDto(saved);
+            populateUsername(saved, responseDto);
+            return ResponseEntity.ok(new ServerResponse(true, "Thread updated successfully", responseDto));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(new ServerResponse(false, "Error creating thread: " + e.getMessage(), null));
+            return ResponseEntity.status(400)
+                    .body(new ServerResponse(false, "Error updating thread: " + e.getMessage(), null));
         }
     }
 
     @DeleteMapping("/deleteThread/{id}")
-    public ServerResponse deleteThread(@PathVariable Long id) {
-        threadService.deleteThread(id);
-        return new ServerResponse(true, "Thread deleted successfully", null);
+    public ResponseEntity<ServerResponse> deleteThread(@PathVariable Long id,
+                                                       @RequestBody(required = false) ThreadDto threadDto) {
+        try {
+            String actingUsername = firstNonNull(
+                    threadDto != null ? threadDto.getUsername() : null,
+                    currentUsername());
+            if (actingUsername == null) {
+                return ResponseEntity.status(401)
+                        .body(new ServerResponse(false, "No user context provided", null));
+            }
+
+            threadService.assertUserCanModifyThread(id, actingUsername);
+
+            threadService.deleteThread(id);
+            return ResponseEntity.ok(new ServerResponse(true, "Thread deleted successfully", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(400)
+                    .body(new ServerResponse(false, "Error deleting thread: " + e.getMessage(), null));
+        }
+    }
+
+    private void populateUsername(Thread thread, ThreadDto dto) {
+        // TODO: optimize (bulk user lookup) to avoid N+1 queries in /all
+        String rawUserId = thread.getUserId();
+        if (rawUserId == null) return;
+        User user = null;
+        try {
+            user = userService.getUserById(Long.parseLong(rawUserId));
+        } catch (NumberFormatException ex) {
+            user = userService.getUserByUsername(rawUserId);
+        }
+        if (user != null) {
+            dto.setUsername(user.getUsername());
+        }
+    }
+
+    private String currentUsername() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated()) return null;
+            Object principal = auth.getPrincipal();
+            if (principal instanceof UserDetails ud) return ud.getUsername();
+            return principal.toString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private <T> T firstNonNull(T a, T b) {
+        return a != null ? a : b;
     }
 }

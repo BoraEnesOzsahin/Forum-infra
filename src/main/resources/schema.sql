@@ -1,14 +1,6 @@
 -- This file will initialize the database schema.
 -- Spring Boot will automatically run this script on startup.
 
--- Drop tables if they exist to ensure a clean slate with CASCADE
-DROP TABLE IF EXISTS message_vote CASCADE;
-DROP TABLE IF EXISTS messages CASCADE;
-DROP TABLE IF EXISTS subthreads CASCADE;
-DROP TABLE IF EXISTS posts CASCADE;
-DROP TABLE IF EXISTS threads CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-
 -- Create the 'users' table
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
@@ -55,7 +47,7 @@ CREATE TABLE IF NOT EXISTS messages (
 -- Create the 'message_vote' table
 CREATE TABLE IF NOT EXISTS message_vote (
     message_id BIGINT NOT NULL,
-    user_id VARCHAR(255) NOT NULL,
+    user_id BIGINT NOT NULL,
     upvoted BOOLEAN NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE,

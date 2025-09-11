@@ -3,6 +3,7 @@ package com.ayrotek.forum.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.util.List;
@@ -21,13 +22,10 @@ public class SubThread {
     @Column(name = "title", nullable=false) private String title;
 
     //@Column(name = "content", columnDefinition="text") private String content;
-    @Column(name = "created_at", nullable=false, updatable=false)
-    private Instant createdAt;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private java.time.Instant createdAt;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = Instant.now();
-    }
     /*@Column private Instant updatedAt;*/
 
 
