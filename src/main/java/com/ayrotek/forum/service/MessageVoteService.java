@@ -6,6 +6,7 @@ import com.ayrotek.forum.entity.MessageVote;
 import com.ayrotek.forum.entity.SubThread;
 import com.ayrotek.forum.entity.Thread;
 import com.ayrotek.forum.entity.User;
+import com.ayrotek.forum.entity.User.Role;
 import com.ayrotek.forum.exception.IdMismatchException;
 import com.ayrotek.forum.exception.UserNotFoundException;
 import com.ayrotek.forum.repo.MessageRepo;
@@ -115,14 +116,22 @@ public class MessageVoteService {
                 .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageId));
     }
 
+    private boolean isAdmin(User user) {
+        return user != null && user.getRole() == Role.ADMIN; // fix package if needed
+    }
+    private boolean hasModelAccess(User user, String modelId) {
+        if (isAdmin(user)) return true;
+        return user != null && user.getModelIds() != null && modelId != null && user.getModelIds().contains(modelId);
+    }
+
     private void enforceModelConstraint(User user, Message message) {
-        if (user.getRole() == User.Role.ADMIN) return;
+        if (isAdmin(user)) return;
         SubThread st = message.getSubThread();
         if (st == null || st.getThread() == null) {
             throw new IllegalStateException("Message missing thread context");
         }
-        Thread thread = st.getThread();
-        if (user.getModelId() == null || !user.getModelId().equals(thread.getModelId())) {
+        String threadModelId = st.getThread().getModelId();
+        if (!hasModelAccess(user, threadModelId)) {
             throw new SecurityException("Model mismatch: cannot vote on this message");
         }
     }

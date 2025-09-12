@@ -5,7 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -36,7 +38,15 @@ public class Thread {
     @OneToMany(mappedBy = "thread", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SubThread> subThreads;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "thread_tags", joinColumns = @JoinColumn(name = "thread_id"))
+    @Column(name = "tag")
+    private Set<String> tags = new HashSet<>();
+
     public enum VehicleType {
         COMMERCIAL, PERSONAL
     }
+
+    public Set<String> getTags() { return tags; }
+    public void setTags(Set<String> tags) { this.tags = tags != null ? tags : new HashSet<>(); }
 }

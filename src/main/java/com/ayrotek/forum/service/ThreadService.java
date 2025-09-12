@@ -2,6 +2,7 @@ package com.ayrotek.forum.service;
 
 import com.ayrotek.forum.entity.Thread;
 import com.ayrotek.forum.entity.User;
+import com.ayrotek.forum.entity.User.Role;
 import com.ayrotek.forum.exception.UserNotFoundException;
 import com.ayrotek.forum.repo.ThreadRepo;
 import com.ayrotek.forum.repo.UserRepo;
@@ -37,7 +38,7 @@ public class ThreadService {
             if (thread.getModelId() != null && !thread.getModelId().equals(user.getModelId())) {
                 throw new IllegalStateException("modelId mismatch: user not allowed to create thread for another model");
             }
-            thread.setModelId(user.getModelId());
+            thread.setModelId(thread.getModelId()); // keep requested model
         }
 
         thread.setUserId(String.valueOf(user.getId()));
@@ -106,7 +107,12 @@ public class ThreadService {
     }
 
     private boolean isAdmin(User user) {
-        return user.getRole() == User.Role.ADMIN;
+        return user != null && user.getRole() == Role.ADMIN;
+    }
+
+    private boolean hasModelAccess(User user, String modelId) {
+        if (isAdmin(user)) return true;
+        return user != null && user.getModelIds() != null && modelId != null && user.getModelIds().contains(modelId);
     }
 
     private void enforceModelIdIfRequired(User user) {

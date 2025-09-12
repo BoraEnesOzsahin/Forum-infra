@@ -7,7 +7,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -38,6 +40,19 @@ public class Message {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Instant updatedAt;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "message_tags", joinColumns = @JoinColumn(name = "message_id"))
+    @Column(name = "tag")
+    private Set<String> tags = new HashSet<>();
+
+    public Set<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<String> tags) {
+        this.tags = tags != null ? tags : new HashSet<>();
+    }
 
     /*@OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MessageVote> message_votes;*/

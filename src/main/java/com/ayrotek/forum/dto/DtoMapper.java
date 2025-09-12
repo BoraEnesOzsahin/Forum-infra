@@ -19,6 +19,10 @@ public class DtoMapper {
         dto.setModelId(thread.getModelId());
         dto.setTitle(thread.getTitle());
         dto.setCreatedAt(thread.getCreatedAt());
+        // Map tags from entity to DTO
+        if (thread.getTags() != null) {
+            dto.setTags(thread.getTags().stream().toList());
+        }
         return dto;
     }
 
@@ -43,6 +47,9 @@ public class DtoMapper {
             dto.setThreadId(subThread.getThread().getId());
         }
         dto.setCreatedAt(subThread.getCreatedAt());
+        if (subThread.getTags() != null) {
+            dto.setTags(subThread.getTags().stream().toList());
+        }
         return dto;
     }
 
@@ -63,9 +70,7 @@ public class DtoMapper {
         if (message.getSubThread() != null) {
             try {
                 dto.setSubThreadId(message.getSubThread().getId());
-            } catch (org.hibernate.LazyInitializationException ignored) {
-                // leave subThreadId null if not initialized
-            }
+            } catch (org.hibernate.LazyInitializationException ignored) {}
         }
         if (message.getUserId() != null && message.getUserId().chars().allMatch(Character::isDigit)) {
             dto.setUserId(Long.parseLong(message.getUserId()));
@@ -73,6 +78,9 @@ public class DtoMapper {
         dto.setCreatedAt(message.getCreatedAt());
         dto.setUpdatedAt(message.getUpdatedAt());
         dto.setUpvoteCount(message.getUpvoteCount());
+        if (message.getTags() != null) {
+            dto.setTags(message.getTags().stream().toList());
+        }
         return dto;
     }
 

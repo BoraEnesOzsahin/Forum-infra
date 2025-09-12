@@ -10,6 +10,7 @@ import com.ayrotek.forum.entity.Message;
 import com.ayrotek.forum.entity.SubThread;
 import com.ayrotek.forum.entity.Thread;
 import com.ayrotek.forum.entity.User;
+import com.ayrotek.forum.entity.User.Role;
 import com.ayrotek.forum.repo.SubThreadRepo;
 
 @Service
@@ -37,6 +38,14 @@ public class MessageService {
         return messageRepo.findBySubThreadIdWithJoinFetch(subThreadId);
     }
 
+    private boolean isAdmin(User user) {
+        return user != null && user.getRole() == Role.ADMIN;
+    }
+    private boolean hasModelAccess(User user, String modelId) {
+        if (isAdmin(user)) return true;
+        return user != null && user.getModelIds() != null && modelId != null && user.getModelIds().contains(modelId);
+    }
+
     public Message createMessage(Message message, String username) {
         if (message.getSubThread() == null || message.getSubThread().getId() == null) {
             throw new IllegalArgumentException("subThreadId required");
@@ -54,14 +63,9 @@ public class MessageService {
             throw new IllegalStateException("User not found: " + username);
         }
 
-        // Admin bypass, otherwise enforce modelId match
-        if (user.getRole() != User.Role.ADMIN) {
-            if (user.getModelId() == null || !user.getModelId().equals(parentThread.getModelId())) {
-                throw new IllegalStateException("Model mismatch: user cannot post to this thread");
-            }
+        if (!hasModelAccess(user, parentThread.getModelId())) {
+            throw new IllegalStateException("Model mismatch: user cannot post to this thread");
         }
-
-        // Set owner
         message.setUserId(String.valueOf(user.getId()));
         message.setSubThread(subThread);
 
@@ -81,14 +85,11 @@ public class MessageService {
 
         boolean admin = user.getRole() == User.Role.ADMIN;
 
-        if (!admin && !String.valueOf(user.getId()).equals(existing.getUserId())) {
-            throw new SecurityException("Not authorized to update this message");
-        }
-
         if (!admin) {
-            // parent thread is already fetched
-            if (user.getModelId() == null ||
-                !user.getModelId().equals(existing.getSubThread().getThread().getModelId())) {
+            if (!String.valueOf(user.getId()).equals(existing.getUserId())) {
+                throw new SecurityException("Not authorized to update this message");
+            }
+            if (!hasModelAccess(user, existing.getSubThread().getThread().getModelId())) {
                 throw new SecurityException("Model mismatch on update");
             }
         }

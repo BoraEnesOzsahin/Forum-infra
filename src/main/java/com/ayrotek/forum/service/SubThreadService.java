@@ -3,6 +3,7 @@ package com.ayrotek.forum.service;
 import com.ayrotek.forum.entity.SubThread;
 import com.ayrotek.forum.entity.Thread;
 import com.ayrotek.forum.entity.User;
+import com.ayrotek.forum.entity.User.Role;
 import com.ayrotek.forum.exception.MissingRelationException;
 import com.ayrotek.forum.exception.UserNotFoundException;
 import com.ayrotek.forum.repo.SubThreadRepo;
@@ -41,33 +42,30 @@ public class SubThreadService {
         return subThreadRepo.findById(id).orElse(null);
     }
 
+    private boolean isAdmin(User user) {
+        return user != null && user.getRole() == Role.ADMIN;
+    }
+    private boolean hasModelAccess(User user, String modelId) {
+        if (isAdmin(user)) return true;
+        return user != null && user.getModelIds() != null && modelId != null && user.getModelIds().contains(modelId);
+    }
+
     public SubThread createSubThread(SubThread subThread, String userIdentifier) {
         if (subThread.getThread() == null || subThread.getThread().getId() == null) {
             throw new MissingRelationException("SubThread must include parent thread");
         }
         Thread parent = threadRepo.findById(subThread.getThread().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Parent thread not found: " + subThread.getThread().getId()));
-
         User user = ensureUserExists(userIdentifier);
 
-        // Enforce modelId consistency for non-admin
-        if (!isAdmin(user)) {
-            if (user.getModelId() == null || user.getModelId().isBlank()) {
-                throw new IllegalStateException("modelId required to create subthread");
-            }
-            if (!user.getModelId().equals(parent.getModelId())) {
-                throw new IllegalStateException("User modelId does not match thread modelId");
-            }
+        if (!hasModelAccess(user, parent.getModelId())) {
+            throw new IllegalStateException("User cannot post to modelId: " + parent.getModelId());
         }
-        // Ownership: set numeric user id (stored as String like Thread.userId design)
         subThread.setUserId(String.valueOf(user.getId()));
-        subThread.setCreatedAt(Instant.now());
         return subThreadRepo.save(subThread);
     }
 
-    public SubThread updateSubThread(Long subThreadId,
-                                     SubThread updatedData,
-                                     String userIdentifier) {
+    public SubThread updateSubThread(Long subThreadId, SubThread updatedData, String userIdentifier) {
         SubThread existing = subThreadRepo.findById(subThreadId)
                 .orElseThrow(() -> new IllegalArgumentException("SubThread not found: " + subThreadId));
 
@@ -75,13 +73,11 @@ public class SubThreadService {
         User user = ensureUserExists(userIdentifier);
 
         if (!isAdmin(user)) {
-            // must own subthread
             if (!String.valueOf(user.getId()).equals(existing.getUserId())) {
                 throw new IllegalStateException("User not authorized to modify this subthread");
             }
-            // still ensure model alignment
-            if (user.getModelId() == null || !user.getModelId().equals(parent.getModelId())) {
-                throw new IllegalStateException("Model mismatch");
+            if (!hasModelAccess(user, parent.getModelId())) {
+                throw new IllegalStateException("User cannot modify modelId: " + parent.getModelId());
             }
         }
 
@@ -115,10 +111,6 @@ public class SubThreadService {
             opt = userRepo.findByUsername(identifier);
         }
         return opt.orElseThrow(() -> new UserNotFoundException("User not found: " + identifier));
-    }
-
-    private boolean isAdmin(User user) {
-        return user.getRole() == User.Role.ADMIN;
     }
 
     private boolean isNumeric(String s) {

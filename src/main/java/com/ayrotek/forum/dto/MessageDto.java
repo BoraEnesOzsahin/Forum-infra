@@ -13,6 +13,7 @@ public class MessageDto {
     private Instant updatedAt;
     private Integer upvoteCount;          // added
     private List<String> voters;          // optional list of voter usernames
+    private List<String> tags;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -32,4 +33,6 @@ public class MessageDto {
     public void setUpvoteCount(Integer upvoteCount) { this.upvoteCount = upvoteCount; }
     public List<String> getVoters() { return voters; }
     public void setVoters(List<String> voters) { this.voters = voters; }
+    public List<String> getTags() { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags; }
 }
