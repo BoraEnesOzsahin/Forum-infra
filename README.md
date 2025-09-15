@@ -154,8 +154,8 @@ List<Message> findBySubThreadIdOrderByUpvoteCountDesc(@Param("subThreadId") Long
 
 | Username        | Model ID | Role (0=Admin, 1=User) | Description                        |
 |-----------------|----------|------------------------|------------------------------------|
-| alice_johnson   | BMW      | 0                      | Admin, BMW enthusiast              |
-| bob_smith       | Mercedes | 1                      | User, Mercedes fan                 |
+| alice_johnson   | BMWi8    | 0                      | Admin, BMWi8 enthusiast            |
+| bob_smith       | Mercedes A200 | 1                 | User, Mercedes A200 fan            |
 | charlie_brown   | Audi     | 1                      | User, Audi helper                  |
 | diana_wilson    | Tesla    | 1                      | User, EV advocate                  |
 | eve_davis       | BMW      | 1                      | User, BMW meets                    |
