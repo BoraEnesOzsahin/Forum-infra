@@ -89,6 +89,15 @@ Do **not** include fields like `id`, `createdAt`, `updatedAt`, or `upvoteCount`‚
 
 ---
 
+## Minimal Required Fields
+
+- **Thread:** `username`, `role`, `modelId`, `title`
+- **SubThread:** `username`, `title`, `threadId`
+- **Message:** `username`, `body`, `subThreadId`
+- **Vote:** `username`, `messageId`, `upvoted` (`true` for upvote, `false` for remove/downvote)
+
+---
+
 ### üìù Input Examples
 
 #### Create Thread
@@ -97,8 +106,8 @@ Do **not** include fields like `id`, `createdAt`, `updatedAt`, or `upvoteCount`‚
 {
   "username": "alice_johnson",
   "role": 0,
-  "modelId": "BMW",
-  "title": "Best BMW maintenance tips"
+  "modelId": "BMW i8",
+  "title": "Best BMW i8 maintenance tips"
 }
 ```
 
@@ -122,7 +131,7 @@ Do **not** include fields like `id`, `createdAt`, `updatedAt`, or `upvoteCount`‚
 }
 ```
 
-#### Create Message Vote
+#### Create Message Vote (Upvote)
 
 ```json
 {
@@ -130,6 +139,46 @@ Do **not** include fields like `id`, `createdAt`, `updatedAt`, or `upvoteCount`‚
   "messageId": 1,
   "upvoted": true
 }
+```
+
+#### Remove Upvote (or Downvote)
+
+```json
+{
+  "username": "diana_wilson",
+  "messageId": 1,
+  "upvoted": false
+}
+```
+
+---
+
+## cURL Examples
+
+Create message:
+```sh
+curl -X POST http://localhost:8080/messages/createMessage ^
+  -H "Content-Type: application/json" ^
+  -d "{\"subThreadId\":1,\"body\":\"Check torque specs.\",\"username\":\"john_doe\"}"
+```
+
+View messages (by upvotes):
+```sh
+curl http://localhost:8080/messages/allMessagesBySubThreadId/1
+```
+
+Upvote:
+```sh
+curl -X POST http://localhost:8080/messageVotes/createMessageVote ^
+  -H "Content-Type: application/json" ^
+  -d "{\"messageId\":1,\"username\":\"john_doe\",\"upvoted\":true}"
+```
+
+Remove upvote:
+```sh
+curl -X POST http://localhost:8080/messageVotes/createMessageVote ^
+  -H "Content-Type: application/json" ^
+  -d "{\"messageId\":1,\"username\":\"john_doe\",\"upvoted\":false}"
 ```
 
 ---
@@ -152,16 +201,16 @@ List<Message> findBySubThreadIdOrderByUpvoteCountDesc(@Param("subThreadId") Long
 
 ## üë• Test Users
 
-| Username        | Model ID | Role (0=Admin, 1=User) | Description                        |
-|-----------------|----------|------------------------|------------------------------------|
-| alice_johnson   | BMW      | 0                      | Admin, BMW enthusiast              |
-| bob_smith       | Mercedes | 1                      | User, Mercedes fan                 |
-| charlie_brown   | Audi     | 1                      | User, Audi helper                  |
-| diana_wilson    | Tesla    | 1                      | User, EV advocate                  |
-| eve_davis       | BMW      | 1                      | User, BMW meets                    |
-| frank_miller    | Mercedes | 0                      | Admin, automotive expert           |
-| grace_lee       | Audi     | 1                      | User, German engineering fan       |
-| henry_taylor    | Tesla    | 1                      | User, sustainable transport        |
+| Username        | Model ID         | Role (0=Admin, 1=User) | Description                        |
+|-----------------|------------------|------------------------|------------------------------------|
+| alice_johnson   | BMW i8           | 0                      | Admin, BMW i8 enthusiast           |
+| bob_smith       | Mercedes C200    | 1                      | User, Mercedes C200 fan            |
+| charlie_brown   | Audi A4          | 1                      | User, Audi A4 helper               |
+| diana_wilson    | Tesla Model S    | 1                      | User, Tesla Model S advocate       |
+| eve_davis       | BMW i8           | 1                      | User, BMW i8 meets                 |
+| frank_miller    | Mercedes C200    | 0                      | Admin, Mercedes C200 expert        |
+| grace_lee       | Audi A4          | 1                      | User, Audi A4 engineering fan      |
+| henry_taylor    | Tesla Model S    | 1                      | User, Tesla Model S transport      |
 
 Use the **username** field in API calls.
 
@@ -169,8 +218,8 @@ Use the **username** field in API calls.
 
 ## üîí Access Control
 
-- Users can only create threads/subthreads for their assigned `modelId`.
-- Cross-model posting is blocked (e.g., BMW user cannot post in Mercedes thread).
+- Users can only create threads/subthreads for their assigned `modelId` (e.g., "BMW i8").
+- Cross-model posting is blocked (e.g., BMW i8 user cannot post in Mercedes C200 thread).
 - Admins (role=0) can bypass model restrictions.
 
 ---
@@ -230,45 +279,5 @@ All API responses:
   "data": { ... }
 }
 ```
-
----
-
-## Minimal Required Fields
-
-- **Thread:** `username`, `role`, `modelId`, `title`
-- **SubThread:** `username`, `title`, `threadId`
-- **Message:** `username`, `body`, `subThreadId`
-- **Vote:** `username`, `messageId`, `upvoted`
-
----
-
-## cURL Examples
-
-Create message:
-```sh
-curl -X POST http://localhost:8080/messages/createMessage ^
-  -H "Content-Type: application/json" ^
-  -d "{\"subThreadId\":1,\"body\":\"Check torque specs.\",\"username\":\"john_doe\"}"
-```
-
-View messages (by upvotes):
-```sh
-curl http://localhost:8080/messages/allMessagesBySubThreadId/1
-```
-
-Vote:
-```sh
-curl -X POST http://localhost:8080/messageVotes/createMessageVote ^
-  -H "Content-Type: application/json" ^
-  -d "{\"messageId\":1,\"username\":\"john_doe\",\"upvoted\":true}"
-  ```
-
----
-
-## Notes
-
-- Do not include system-generated fields in Swagger or API requests.
-- Admins can act across model boundaries.
-- All relationships are managed via entity references, not raw IDs except where specified.
 
 ---
